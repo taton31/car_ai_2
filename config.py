@@ -1,5 +1,7 @@
-ROAD_IMAGES = ['1.png', '2.png', '3.png']
+ROAD_IMAGES = ['0.png', '1.png', '2.png', '3.png']
 PATH_ROAD_IMAGES = 'app/source/title_road/'
+CAR_IMAGE = 'app/source/car.png'
+PATH_SAVED_MAP = 'app/saved_map/map.txt'
 
 GRID_SIZE = 128
 GRID_WIDTH = 10

@@ -1,19 +1,22 @@
 import sys
-from app import pygame, RoadBlock
-from app import window, grid, titles, group_roads, menu
-from config import WHITE, GRID_SIZE, MENU_HEIGHT, MENU_WIDTH, MENU_ELEMENT_HEIGHT
+from app import pygame
+from app import window, grid, titles, group_roads, menu, car, buttons, map
+from config import WHITE, GRID_SIZE, MENU_HEIGHT, MENU_WIDTH, MENU_ELEMENT_HEIGHT, WINDOW_SIZE
 
 dragging_road = None
 
-# Главный цикл
 running = True
 while running:
     window.fill(WHITE)
     grid.draw()
     titles.draw()
-    # roads.blit()
     group_roads.draw(window)
     menu.draw()
+    buttons.draw()
+    
+    
+    car.update(pygame.key.get_pressed())
+    car.draw(window)
 
 
 
@@ -40,7 +43,7 @@ while running:
                 x, y = event.pos[0] + dragging_offset[0], event.pos[1] + dragging_offset[1]
                 x = ((x + GRID_SIZE/2) // GRID_SIZE) * GRID_SIZE
                 y = ((y + GRID_SIZE/2) // GRID_SIZE) * GRID_SIZE
-                dragging_road.move(x, y)
+                dragging_road.move(x, y, save_position=True)
                 dragging_road = None
             elif event.button == 1 and menu.visible:  # ЛКМ при видимом меню
                 menu_rect = pygame.Rect(menu.position[0], menu.position[1], MENU_WIDTH, MENU_HEIGHT)
@@ -49,6 +52,10 @@ while running:
                     if 0 <= item_index < len(menu.items):
                         menu.handle_action(menu.items[item_index])
                 menu.hide()
+            elif pygame.Rect(buttons.position[0], buttons.position[1], WINDOW_SIZE[0] - GRID_SIZE, WINDOW_SIZE[1] - MENU_HEIGHT):
+                item_index = (event.pos[1] - buttons.position[1]) // MENU_ELEMENT_HEIGHT
+                if 0 <= item_index < len(buttons.items):
+                    buttons.handle_action(buttons.items[item_index])
 
         elif event.type == pygame.MOUSEMOTION:
             if dragging_road is not None:
