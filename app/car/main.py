@@ -5,13 +5,14 @@ from app.car.utils import blit_rotate_center #, line_intersection, line_circle_i
 from config import CAR_IMAGE, DEBUG, GRID_SIZE, VECTORS_LEN, GRID_WIDTH, GRID_HEIGHT, MAX_FITNESS
 from app import window
 
+car_image = image.load(CAR_IMAGE)
+car_image = transform.scale(car_image, (50, 30))
+car_image = transform.rotate(car_image, 90)
+car_image.set_alpha(128)
 
 class Car:
     def __init__(self, pos, max_vel, rotation_vel):
-        self.img = image.load(CAR_IMAGE)
-        self.img = transform.scale(self.img, (50, 30))
-        self.img = transform.rotate(self.img, 90)
-        self.img.set_alpha(64)
+        self.img = car_image
         self.max_vel = max_vel
         self.vel = 0
         self.rotation_vel = rotation_vel
@@ -40,11 +41,11 @@ class Car:
         blit_rotate_center(window, self.img, (self.x, self.y), self.angle)
 
 
-        if DEBUG:
-            center = self.img.get_rect(topleft=(self.x, self.y)).center
-            angle = -math.radians(self.angle + 90)
-            x = center[0] + math.cos(angle) * VECTORS_LEN
-            y = center[1] + math.sin(angle) * VECTORS_LEN
+        # if DEBUG:
+        #     center = self.img.get_rect(topleft=(self.x, self.y)).center
+        #     angle = -math.radians(self.angle + 90)
+        #     x = center[0] + math.cos(angle) * VECTORS_LEN
+        #     y = center[1] + math.sin(angle) * VECTORS_LEN
           
 
     def radars(self, grid):
@@ -110,7 +111,7 @@ class Car:
         radar.append(point)
 
         angle = -math.radians(self.angle + 25)
-        center_new = (center[0] + math.cos(angle) * 16, center[1] + math.sin(angle) * 16)
+        center_new = (center[0] + math.cos(angle) * 15, center[1] + math.sin(angle) * 15)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
         vision.append(line_length(center_new, point))
         radar.append(point)
@@ -122,7 +123,7 @@ class Car:
         radar.append(point)
 
         angle = -math.radians(self.angle + 155)
-        center_new = (center[0] + math.cos(angle) * 16, center[1] + math.sin(angle) * 16)
+        center_new = (center[0] + math.cos(angle) * 15, center[1] + math.sin(angle) * 15)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
         vision.append(line_length(center_new, point))
         radar.append(point)
@@ -138,29 +139,32 @@ class Car:
     def check_death(self, grid):
         center = self.img.get_rect(topleft=(self.x, self.y)).center
 
-        angle = - math.radians(self.angle + 55)
-        center_new = (center[0] + math.cos(angle) * 24, center[1] + math.sin(angle) * 24)
-        if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
-            return True
-        if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
+        try:
+            angle = - math.radians(self.angle + 55)
+            center_new = (center[0] + math.cos(angle) * 24, center[1] + math.sin(angle) * 24)
+            if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
+                return True
+            if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
 
-        angle = - math.radians(self.angle + 25)
-        center_new = (center[0] + math.cos(angle) * 15, center[1] + math.sin(angle) * 15)
-        if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
-            return True
-        if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
+            angle = - math.radians(self.angle + 25)
+            center_new = (center[0] + math.cos(angle) * 15, center[1] + math.sin(angle) * 15)
+            if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
+                return True
+            if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
 
-        angle = - math.radians(self.angle + 125)
-        center_new = (center[0] + math.cos(angle) * 24, center[1] + math.sin(angle) * 24)
-        if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
-            return True
-        if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
+            angle = - math.radians(self.angle + 125)
+            center_new = (center[0] + math.cos(angle) * 24, center[1] + math.sin(angle) * 24)
+            if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
+                return True
+            if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
 
-        angle = - math.radians(self.angle + 155)
-        center_new = (center[0] + math.cos(angle) * 15, center[1] + math.sin(angle) * 15)
-        if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
-            return True
-        if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
+            angle = - math.radians(self.angle + 155)
+            center_new = (center[0] + math.cos(angle) * 15, center[1] + math.sin(angle) * 15)
+            if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
+                return True
+            if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
+        except:
+            pass
         return False
 
     def move_forward(self):
@@ -189,7 +193,7 @@ class Car:
             self.fitness += 1
             self.flag_update_map = True
 
-            if self.fitness > count_roads:
+            if self.fitness > count_roads + 10:
                 self.fitness += (10 * count_roads) / self.ticks
                 self.alive = False
 
@@ -217,7 +221,7 @@ class Car:
 
         if not moved:
             self.reduce_speed()
-            self.fitness -= 0.02
+            self.fitness -= 0.01
 
 
     def update(self, grid, keys, count_roads, left=False, right=False, forward=False):

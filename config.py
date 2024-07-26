@@ -1,6 +1,6 @@
 DEBUG = False
 
-ROAD_IMAGES = ['a0.png', 'a1.png', 'a2.png', 'a3.png']
+ROAD_IMAGES = ['a0.png', 'a1.png', 'a2.png', 'a3.png', 'a4.png', 'a5.png']
 PATH_ROAD_IMAGES = 'app/source/title_road/'
 CAR_IMAGE = 'app/source/car.png'
 PATH_SAVED_MAP = 'app/saved_map/map.txt'

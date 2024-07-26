@@ -30,6 +30,8 @@ RoadBlock(0, (0,0))
 RoadBlock(1, (0,1))
 RoadBlock(2, (0,2))
 RoadBlock(3, (0,3))
+RoadBlock(4, (0,4))
+RoadBlock(5, (0,5))
 RoadBlock(0, (0,0), True, [0])
 
 from app.objects.button import Buttons

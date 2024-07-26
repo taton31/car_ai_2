@@ -17,7 +17,7 @@ def eval_genomes(genomes, config):
     nets = []
 
     for genome_id, genome in genomes:
-        cars.append(Car((100,45), 10, 4))
+        cars.append(Car((100,45), 14, 4))
         ge.append(genome)
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         nets.append(net)
@@ -54,9 +54,9 @@ def eval_genomes(genomes, config):
                     nets.pop(i)
 
             for i, car in enumerate(cars):
-                car.img.set_alpha(64)
-                if max_fitness == car.fitness:
-                    car.img.set_alpha(255)
+                # car.img.set_alpha(64)
+                # if max_fitness == car.fitness:
+                #     car.img.set_alpha(255)
 
 
                 output = nets[i].activate(car.radars(grid))
