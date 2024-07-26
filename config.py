@@ -1,9 +1,11 @@
-DEBUG = True
+DEBUG = False
 
 ROAD_IMAGES = ['a0.png', 'a1.png', 'a2.png', 'a3.png']
 PATH_ROAD_IMAGES = 'app/source/title_road/'
 CAR_IMAGE = 'app/source/car.png'
 PATH_SAVED_MAP = 'app/saved_map/map.txt'
+
+PATH_NEAT_CONFIG = 'config.txt'
 
 GRID_SIZE = 128
 GRID_WIDTH = 10
@@ -21,6 +23,7 @@ MENU_WIDTH = 150
 MENU_HEIGHT = 100
 MENU_ELEMENT_HEIGHT = 30
 
-VECTORS_LEN = 150
+VECTORS_LEN = 250
 
 CARS_NUMBER = 50
+MAX_FITNESS = 50

@@ -2,7 +2,7 @@ from pygame import image, transform, draw
 from pygame import K_UP, K_LEFT, K_RIGHT
 import math
 from app.car.utils import blit_rotate_center #, line_intersection, line_circle_intersection
-from config import CAR_IMAGE, DEBUG, GRID_SIZE, VECTORS_LEN, GRID_WIDTH, GRID_HEIGHT
+from config import CAR_IMAGE, DEBUG, GRID_SIZE, VECTORS_LEN, GRID_WIDTH, GRID_HEIGHT, MAX_FITNESS
 from app import window
 
 
@@ -11,16 +11,21 @@ class Car:
         self.img = image.load(CAR_IMAGE)
         self.img = transform.scale(self.img, (50, 30))
         self.img = transform.rotate(self.img, 90)
+        self.img.set_alpha(64)
         self.max_vel = max_vel
         self.vel = 0
         self.rotation_vel = rotation_vel
         self.angle = -90
         self.x, self.y = pos
-        self.acceleration = 0.1
+        self.acceleration = 0.2
 
         self.alive = True
         self.fitness = 0
         self.fitness_map = [[False for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+
+        self.flag_update_map = False
+
+        self.ticks = 0
 
 
     def rotate(self, left=False, right=False):
@@ -73,41 +78,59 @@ class Car:
         #     point = find_point(center[0], center[1], x, y)
                 
         def find_point(center, cos, sin, len = 1):
-            if grid.get_at((int(center[0] + cos * len), int(center[1] + sin * len))) == (199, 199, 199, 255) or len > VECTORS_LEN:
-                return (int(center[0] + cos * len), int(center[1] + sin * len))
+            pic_x = int(center[0] + cos * len)
+            pic_y = int(center[1] + sin * len)
+            if pic_x <= 0 or pic_y <= 0 or pic_x >= grid.get_width() or pic_y >= grid.get_height():
+                return (pic_x, pic_y)
+
+            if grid.get_at((pic_x, pic_y)) == (199, 199, 199, 255) or len > VECTORS_LEN:
+                return (pic_x, pic_y)
             return find_point(center, cos, sin, len + 1)
 
+        def line_length(p1, p2):
+            a = p1[0] - p2[0]
+            b = p1[1] - p2[1]
+
+            return int(math.sqrt(a**2 + b**2))
+        
         radar = []
+        vision = []
         center = self.img.get_rect(topleft=(self.x, self.y)).center
 
         angle = - math.radians(self.angle + 90)
         center_new = (center[0] + math.cos(angle) * 25, center[1] + math.sin(angle) * 25)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
+        vision.append(line_length(center_new, point))
         radar.append(point)
 
         angle = -math.radians(self.angle + 55)
         center_new = (center[0] + math.cos(angle) * 24, center[1] + math.sin(angle) * 24)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
+        vision.append(line_length(center_new, point))
         radar.append(point)
 
         angle = -math.radians(self.angle + 25)
         center_new = (center[0] + math.cos(angle) * 16, center[1] + math.sin(angle) * 16)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
+        vision.append(line_length(center_new, point))
         radar.append(point)
 
         angle = -math.radians(self.angle + 125)
         center_new = (center[0] + math.cos(angle) * 24, center[1] + math.sin(angle) * 24)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
+        vision.append(line_length(center_new, point))
         radar.append(point)
 
         angle = -math.radians(self.angle + 155)
         center_new = (center[0] + math.cos(angle) * 16, center[1] + math.sin(angle) * 16)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
+        vision.append(line_length(center_new, point))
         radar.append(point)
 
         if DEBUG: [draw.circle(window, (255, 0, 0), point, 3) for point in radar]
 
-        return radar
+        vision.append(self.vel * 10)
+        return vision
         
 
         
@@ -153,46 +176,70 @@ class Car:
         self.x -= horizontal
 
     def reduce_speed(self):
-        self.vel = max(self.vel - self.acceleration / 2, 0)
+        self.vel = max(self.vel - self.acceleration * 2, 0)
         self.move()
 
-    def update_fitness(self):
+    def update_fitness(self,  count_roads):
         center = self.img.get_rect(topleft=(self.x, self.y)).center
 
         j, i = center[0]//GRID_SIZE, center[1]//GRID_SIZE
+
         if not self.fitness_map[i][j]:
             self.fitness_map[i][j] = True
-            self.fitness += 100
+            self.fitness += 1
+            self.flag_update_map = True
 
-        if i == 0 and j == 0 and self.fitness > 800:
+            if self.fitness > count_roads:
+                self.fitness += (10 * count_roads) / self.ticks
+                self.alive = False
+
+        if i == 0 and j == 0 and self.fitness > 3 and self.flag_update_map:
             self.fitness_map = [[False for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+            self.fitness_map[i][j] = True
+            self.flag_update_map = False
+            self.fitness += 1
 
-    def update_move(self, keys):
+        if self.fitness < -1: 
+            self.alive = False
+            self.fitness -= 3
+
+
+    def update_move(self, keys, left, right, forward):
         moved = False
 
-        if keys[K_LEFT]:
+        if keys[K_LEFT] or left:
             self.rotate(left=True)
-        if keys[K_RIGHT]:
+        if keys[K_RIGHT] or right:
             self.rotate(right=True)
-        if keys[K_UP]:
+        if keys[K_UP] or forward:
             moved = True
             self.move_forward()
 
         if not moved:
             self.reduce_speed()
-            self.fitness -= 1
+            self.fitness -= 0.02
 
 
-    def update(self, grid, keys):
+    def update(self, grid, keys, count_roads, left=False, right=False, forward=False):
         if not self.alive: return
 
-        self.update_move(keys)
+        self.ticks += 0.016
+
+        self.update_move(keys, left, right, forward)
         
         if self.check_death(grid): 
             self.alive = False
+            self.fitness -= 3
         
-        self.radars(grid)
-        self.update_fitness()
+        # self.radars(grid)
+        self.update_fitness(count_roads)
 
 
         # print(self.fitness)
+
+
+def is_somebody_alive(cars):
+    for car in cars:
+        if car.alive:
+            return True
+    return False
