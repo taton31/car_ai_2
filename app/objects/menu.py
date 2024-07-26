@@ -42,10 +42,8 @@ class Menu(Surface):
 
 
     def handle_action(self, action):
-        # if not self.selected_road.was_moved: return
         if action == "Удалить":
             self.selected_road.kill()
-            
         elif action == "Повернуть":
             self.selected_road.image = transform.rotate(self.selected_road.image, 90)
             self.selected_road.transforms.append(0)

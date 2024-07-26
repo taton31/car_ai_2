@@ -6,7 +6,7 @@ from app import window, map, RoadBlock
 class Buttons(Surface):
     pos = (0, 0)
     font = font.Font(None, MENU_ELEMENT_HEIGHT)
-    items = ["Сохр трэк", "Загр трэк"]
+    items = ["Сохр трэк", "Загр трэк", "Старт"]
     position = (WINDOW_SIZE[0] - GRID_SIZE, WINDOW_SIZE[1] - MENU_HEIGHT)
     selected_road = None
 
@@ -31,5 +31,7 @@ class Buttons(Surface):
             map.save()
         elif action == "Загр трэк":
             map.load(RoadBlock)
+        # elif action == "Старт":
+        #     starting = False
 
 

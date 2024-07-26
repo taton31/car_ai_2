@@ -1,9 +1,8 @@
 from pygame import image, transform, draw
 from pygame import K_UP, K_LEFT, K_RIGHT
-# from pygame.math import Vector2
 import math
-from app.car.utils import blit_rotate_center, line_intersection, line_circle_intersection
-from config import CAR_IMAGE, DEBUG, GRID_SIZE, VECTORS_LEN
+from app.car.utils import blit_rotate_center #, line_intersection, line_circle_intersection
+from config import CAR_IMAGE, DEBUG, GRID_SIZE, VECTORS_LEN, GRID_WIDTH, GRID_HEIGHT
 from app import window
 
 
@@ -12,13 +11,16 @@ class Car:
         self.img = image.load(CAR_IMAGE)
         self.img = transform.scale(self.img, (50, 30))
         self.img = transform.rotate(self.img, 90)
-        self.img.fill((0,0,0))
         self.max_vel = max_vel
         self.vel = 0
         self.rotation_vel = rotation_vel
         self.angle = -90
         self.x, self.y = pos
         self.acceleration = 0.1
+
+        self.alive = True
+        self.fitness = 0
+        self.fitness_map = [[False for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
 
 
     def rotate(self, left=False, right=False):
@@ -28,6 +30,8 @@ class Car:
             self.angle -= self.rotation_vel
 
     def draw(self):
+        if not self.alive: return
+
         blit_rotate_center(window, self.img, (self.x, self.y), self.angle)
 
 
@@ -36,35 +40,9 @@ class Car:
             angle = -math.radians(self.angle + 90)
             x = center[0] + math.cos(angle) * VECTORS_LEN
             y = center[1] + math.sin(angle) * VECTORS_LEN
-            # line_surface, line_mask = create_line_mask(center, (x, y), 3)
+          
 
-            # win.blit(line_mask.to_surface(), center)
-            # mask.from_surface
-            # mask.from_surface(draw.line(win, (0,0,0), center, (x, y)))
-
-
-
-    def check_collision(self, roadblocks):
-        self.radars()
-        center = self.img.get_rect(topleft=(self.x, self.y)).center
-        angle = -math.radians(self.angle + 90)
-        x = center[0] + math.cos(angle) * VECTORS_LEN
-        y = center[1] + math.sin(angle) * VECTORS_LEN
-        
-        # for roadblock in roadblocks:
-        #     # a = line_intersection(roadblock.rect.topleft, roadblock.rect.topright, center, (x, y))
-        #     # a = a or line_intersection(roadblock.rect.topleft, roadblock.rect.bottomleft, center, (x, y))
-        #     # a = a or line_intersection(roadblock.rect.bottomright, roadblock.rect.bottomleft, center, (x, y))
-        #     # a = a or line_intersection(roadblock.rect.bottomright, roadblock.rect.topright, center, (x, y))
-
-        #     # if a and DEBUG: draw.circle(win, (255, 0, 0), a, 6)
-
-        #     a = line_circle_intersection(center[0], center[1], x, y, roadblock.rect.center[0], roadblock.rect.center[1], GRID_SIZE // 1.5, VECTORS_LEN)
-        #     if a and DEBUG: 
-        #         # draw.circle(window, (255, 0, 0), a, 6)
-        # draw.line(window, (125,0,0), center, (x, y))
-
-    def radars(self):
+    def radars(self, grid):
         # def find_point(x1, y1, x2, y2):  
         #     abs_x = (x2 - x1) / 2
         #     abs_y = (y2 - y1) / 2
@@ -95,60 +73,72 @@ class Car:
         #     point = find_point(center[0], center[1], x, y)
                 
         def find_point(center, cos, sin, len = 1):
-            if window.get_at((int(center[0] + cos * len), int(center[1] + sin * len))) != (255, 255, 255):
+            if grid.get_at((int(center[0] + cos * len), int(center[1] + sin * len))) == (199, 199, 199, 255) or len > VECTORS_LEN:
                 return (int(center[0] + cos * len), int(center[1] + sin * len))
             return find_point(center, cos, sin, len + 1)
 
         radar = []
         center = self.img.get_rect(topleft=(self.x, self.y)).center
 
-        angle = -math.radians(self.angle + 90)
-        center_new = (center[0] + math.cos(angle) * 30, center[1] + math.sin(angle) * 30)
+        angle = - math.radians(self.angle + 90)
+        center_new = (center[0] + math.cos(angle) * 25, center[1] + math.sin(angle) * 25)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
         radar.append(point)
-
-        if DEBUG: draw.circle(window, (255, 0, 0), point, 3)
 
         angle = -math.radians(self.angle + 55)
-        center_new = (center[0] + math.cos(angle) * 33, center[1] + math.sin(angle) * 33)
+        center_new = (center[0] + math.cos(angle) * 24, center[1] + math.sin(angle) * 24)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
         radar.append(point)
-
-        if DEBUG: draw.circle(window, (255, 0, 0), point, 3)
 
         angle = -math.radians(self.angle + 25)
-        center_new = (center[0] + math.cos(angle) * 25, center[1] + math.sin(angle) * 25)
+        center_new = (center[0] + math.cos(angle) * 16, center[1] + math.sin(angle) * 16)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
         radar.append(point)
-
-        if DEBUG: draw.circle(window, (255, 0, 0), point, 3)
 
         angle = -math.radians(self.angle + 125)
-        center_new = (center[0] + math.cos(angle) * 33, center[1] + math.sin(angle) * 33)
+        center_new = (center[0] + math.cos(angle) * 24, center[1] + math.sin(angle) * 24)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
         radar.append(point)
 
-        if DEBUG: draw.circle(window, (255, 0, 0), point, 3)
-
         angle = -math.radians(self.angle + 155)
-        center_new = (center[0] + math.cos(angle) * 25, center[1] + math.sin(angle) * 25)
+        center_new = (center[0] + math.cos(angle) * 16, center[1] + math.sin(angle) * 16)
         point = find_point(center_new, math.cos(angle), math.sin(angle))
         radar.append(point)
 
         if DEBUG: [draw.circle(window, (255, 0, 0), point, 3) for point in radar]
 
+        return radar
+        
 
         
-        # for roadblock in roadblocks:
-        #     # a = line_intersection(roadblock.rect.topleft, roadblock.rect.topright, center, (x, y))
-        #     # a = a or line_intersection(roadblock.rect.topleft, roadblock.rect.bottomleft, center, (x, y))
-        #     # a = a or line_intersection(roadblock.rect.bottomright, roadblock.rect.bottomleft, center, (x, y))
-        #     # a = a or line_intersection(roadblock.rect.bottomright, roadblock.rect.topright, center, (x, y))
 
-        #     # if a and DEBUG: draw.circle(win, (255, 0, 0), a, 6)
+    def check_death(self, grid):
+        center = self.img.get_rect(topleft=(self.x, self.y)).center
 
-        #     a = line_circle_intersection(center[0], center[1], x, y, roadblock.rect.center[0], roadblock.rect.center[1], GRID_SIZE // 1.5, VECTORS_LEN)
-        #     if a and DEBUG: draw.circle(window, (255, 0, 0), a, 6)
+        angle = - math.radians(self.angle + 55)
+        center_new = (center[0] + math.cos(angle) * 24, center[1] + math.sin(angle) * 24)
+        if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
+            return True
+        if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
+
+        angle = - math.radians(self.angle + 25)
+        center_new = (center[0] + math.cos(angle) * 15, center[1] + math.sin(angle) * 15)
+        if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
+            return True
+        if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
+
+        angle = - math.radians(self.angle + 125)
+        center_new = (center[0] + math.cos(angle) * 24, center[1] + math.sin(angle) * 24)
+        if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
+            return True
+        if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
+
+        angle = - math.radians(self.angle + 155)
+        center_new = (center[0] + math.cos(angle) * 15, center[1] + math.sin(angle) * 15)
+        if grid.get_at((int(center_new[0] + math.cos(angle)), int(center_new[1] + math.sin(angle)))) == (199, 199, 199, 255):
+            return True
+        if DEBUG: draw.circle(window, (0, 255, 255), center_new, 2) 
+        return False
 
     def move_forward(self):
         self.vel = min(self.vel + self.acceleration, self.max_vel)
@@ -166,7 +156,18 @@ class Car:
         self.vel = max(self.vel - self.acceleration / 2, 0)
         self.move()
 
-    def update(self, keys):
+    def update_fitness(self):
+        center = self.img.get_rect(topleft=(self.x, self.y)).center
+
+        j, i = center[0]//GRID_SIZE, center[1]//GRID_SIZE
+        if not self.fitness_map[i][j]:
+            self.fitness_map[i][j] = True
+            self.fitness += 100
+
+        if i == 0 and j == 0 and self.fitness > 800:
+            self.fitness_map = [[False for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+
+    def update_move(self, keys):
         moved = False
 
         if keys[K_LEFT]:
@@ -179,3 +180,19 @@ class Car:
 
         if not moved:
             self.reduce_speed()
+            self.fitness -= 1
+
+
+    def update(self, grid, keys):
+        if not self.alive: return
+
+        self.update_move(keys)
+        
+        if self.check_death(grid): 
+            self.alive = False
+        
+        self.radars(grid)
+        self.update_fitness()
+
+
+        # print(self.fitness)

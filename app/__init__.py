@@ -1,6 +1,6 @@
 import pygame
 import sys
-from config import WINDOW_SIZE
+from config import WINDOW_SIZE, CARS_NUMBER
 
 pygame.init()
 
@@ -18,10 +18,7 @@ from app.objects.map import Map
 grid = Grid()
 titles = Titles()
 menu = Menu()
-car = Car((11,11), 4, 4)
-cars = []
-for i in range(5):
-    cars.append(Car((11,11+i), 4, 4))
+
 map = Map()
 
 
@@ -31,6 +28,7 @@ RoadBlock(0, (0,0))
 RoadBlock(1, (0,1))
 RoadBlock(2, (0,2))
 RoadBlock(3, (0,3))
+RoadBlock(0, (0,0), True, [0])
 
 from app.objects.button import Buttons
 buttons = Buttons()
