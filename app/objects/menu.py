@@ -4,7 +4,6 @@ from config import BLACK, MENU_WIDTH, MENU_HEIGHT, LIGHT_GREY, HIGHLIGHT_COLOR, 
 from app import window
 
 class Menu(Surface):
-    pos = (0, 0)
     font = font.Font(None, MENU_ELEMENT_HEIGHT)
     items = ["Удалить", "Повернуть", "Отразить"]
     visible = False
@@ -43,11 +42,17 @@ class Menu(Surface):
 
 
     def handle_action(self, action):
+        # if not self.selected_road.was_moved: return
         if action == "Удалить":
             self.selected_road.kill()
+            
         elif action == "Повернуть":
             self.selected_road.image = transform.rotate(self.selected_road.image, 90)
+            self.selected_road.transforms.append(0)
         elif action == "Отразить":
             self.selected_road.image = transform.flip(self.selected_road.image, True, False)
+            self.selected_road.transforms.append(1)
+            
+
 
 

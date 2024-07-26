@@ -1,4 +1,6 @@
-ROAD_IMAGES = ['0.png', '1.png', '2.png', '3.png']
+DEBUG = True
+
+ROAD_IMAGES = ['a0.png', 'a1.png', 'a2.png', 'a3.png']
 PATH_ROAD_IMAGES = 'app/source/title_road/'
 CAR_IMAGE = 'app/source/car.png'
 PATH_SAVED_MAP = 'app/saved_map/map.txt'
@@ -18,3 +20,5 @@ HIGHLIGHT_COLOR = (100, 100, 255)
 MENU_WIDTH = 150
 MENU_HEIGHT = 100
 MENU_ELEMENT_HEIGHT = 30
+
+VECTORS_LEN = 150
