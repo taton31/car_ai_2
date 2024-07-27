@@ -1,4 +1,4 @@
-from pygame import image, transform, draw
+from pygame import image, transform, draw, font, Color
 from pygame import K_UP, K_LEFT, K_RIGHT
 import math
 from app.car.utils import blit_rotate_center #, line_intersection, line_circle_intersection
@@ -9,6 +9,9 @@ car_image = image.load(CAR_IMAGE)
 car_image = transform.scale(car_image, (50, 30))
 car_image = transform.rotate(car_image, 90)
 car_image.set_alpha(128)
+
+font = font.SysFont("Arial" , 18 , bold = True)
+
 
 class Car:
     def __init__(self, pos, max_vel, rotation_vel):
@@ -40,7 +43,10 @@ class Car:
 
         blit_rotate_center(window, self.img, (self.x, self.y), self.angle)
 
-
+        if DEBUG:
+            fit_score = round(self.fitness, 2)
+            fit_score = font.render(f'{fit_score}' , 1, Color("BLUE"))
+            window.blit(fit_score,(self.x, self.y + 10))
         # if DEBUG:
         #     center = self.img.get_rect(topleft=(self.x, self.y)).center
         #     angle = -math.radians(self.angle + 90)
@@ -231,7 +237,7 @@ class Car:
 
         self.update_move(keys, left, right, forward)
         
-        if self.check_death(grid): 
+        if self.check_death(grid) or self.ticks > 60: 
             self.alive = False
             self.fitness -= 3
         

@@ -67,7 +67,6 @@ def eval_genomes(genomes, config):
                     right = True
                 if output[2] > 0.5:
                     forward = True
-                # forward = True
                 car.update(grid, pygame.key.get_pressed(), map.count_roads, left, right, forward)
                 car.draw()
 
@@ -138,7 +137,7 @@ def eval_genomes(genomes, config):
                             menu.hovered_item = None
 
 
-        clock.tick(90)
+        clock.tick()
         draw_fps(clock.get_fps(), window)
         draw_score(max_fitness, window)
         pygame.display.update()
@@ -156,14 +155,28 @@ def run():
         PATH_NEAT_CONFIG
     )
 
-    pop = neat.Population(config)
+    # pop = neat.Population(config)
+    pop = neat.Checkpointer.restore_checkpoint("neat_checkpoints/one_track_best")
 
     pop.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     pop.add_reporter(stats)
+    pop.add_reporter(neat.Checkpointer(10, filename_prefix='neat_checkpoints/checkpoint-'))
 
-    pop.run(eval_genomes, 1050)
+    return pop.run(eval_genomes, 1000), stats, config
 
 
 
-run()
+winner, stats, config = run()
+
+
+from  visualize import visualize
+node_names = {-1: 'front', -2: 'front-left', -3: 'left', -4: 'front-right', -5: 'right', -6: 'speed', 0: 'left', 1: 'right', 2: 'forward'}
+
+visualize.draw_net(config, winner, True, node_names=node_names)
+
+visualize.draw_net(config, winner, True, node_names=node_names, prune_unused=True)
+
+visualize.plot_stats(stats, ylog=False, view=True)
+
+visualize.plot_species(stats, view=True)
